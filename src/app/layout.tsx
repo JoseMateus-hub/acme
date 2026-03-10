@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { inter } from './ui/fonts';
+import { inter } from '@/app/ui/fonts';
 import '@/app/globals.css';
 
 
