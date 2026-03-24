@@ -59,17 +59,17 @@ async function main() {
     amount: 5500,
     status: InvoiceStatus.PENDENTE,
     data: '2026-08-28',
-    customer: customers[2]
+    customer: customers[0]
   }, {
     amount: 1500,
     status: InvoiceStatus.PENDENTE,
     data: '2026-10-10',
-    customer: customers[2]
+    customer: customers[1]
   }, {
     amount: 500,
     status: InvoiceStatus.PAGO,
     data: '2026-10-15',
-    customer: customers[2]
+    customer: customers[0]
   }, {
     amount: 550,
     status: InvoiceStatus.PAGO,
@@ -79,7 +79,7 @@ async function main() {
     amount: 155,
     status: InvoiceStatus.PENDENTE,
     data: '2026-05-30',
-    customer: customers[2]
+    customer: customers[1]
   }, {
     amount: 150,
     status: InvoiceStatus.PAGO,
@@ -99,7 +99,7 @@ async function main() {
     amount: 2000,
     status: InvoiceStatus.PENDENTE,
     data: '2026-07-15',
-    customer: customers[2]
+    customer: customers[0]
   }, {
     amount: 2500,
     status: InvoiceStatus.PENDENTE,
