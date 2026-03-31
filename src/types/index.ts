@@ -12,7 +12,7 @@ export interface Customer {
   id: string;
   name: string;
   email: string;
-  imaageUrl: string;
+  imageUrl: string;
 };
 
 export type CreateCustomerData = Omit<Customer, 'id'>;
