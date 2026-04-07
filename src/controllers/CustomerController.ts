@@ -1,0 +1,129 @@
+import { z } from 'zod';
+import {
+  findAllCustomerById,
+  findAllCustomers,
+  createCustomer,
+  updateCustomer,
+  deleteCustomer
+} from '@/services/CustomerService';
+import { ApiError } from '@/types';
+import { email, record, string } from 'zod/v4';
+
+export const CreateCustomerSchema = z.object({
+  name: z
+    .string({ required_error: 'O campo é obrigatoriamente texto.' })
+    .min(1)
+    .max(100),
+  email: z
+    .string({ required_error: 'O campo é obrigatóriamente texto.' })
+    .email({ message: 'O campo possui formato inválido.' }),
+  imageUrl: z
+    .string({ required_error: 'O campo é obrigatoriamente texto.' })
+    .url({ message: 'O campo possui formato inválido.' })
+});
+
+export const UpdateCustomerSchema = CreateCustomerSchema.partial();
+
+export type CreateCustomerDTO = z.infer<typeof CreateCustomerSchema>;
+export type UpdateCustomerDTO = z.infer<typeof UpdateCustomerSchema>;
+
+function buildErrorResponse(
+  message: string,
+  details?: Record<string, string[]>
+): ApiError { 
+
+  if (details) {
+    return { error: message, details };
+  };
+
+  return { error: message };
+};
+
+export const CustomerController = {
+  async getAll(searchParams: URLSearchParams) {
+    const search = searchParams.get('search') ?? undefined;
+    const customers = await findAllCustomers({ search });
+    return {
+      status: 200,
+      body: customers
+    };
+  },
+  async getById(id: string) {
+    const customer = findAllCustomerById(id);
+
+    if (!customer) {
+      return {
+        status: 404,
+        body: buildErrorResponse('Cliente não encontrado.')
+      };
+    };
+    
+    return {
+      status: 200,
+      body: customer
+    };
+
+  },
+  async create(data: unknown) {
+    const parsed = CreateCustomerSchema.safeParse(data);
+
+    if (!parsed.success) {
+      return {
+        status: 400,
+        body: buildErrorResponse('Dados inválidos.', 
+        parsed.error.flatten().fieldErrors as Record<string, string[]>)
+      };
+    };
+
+    const customer = await createCustomer(parsed.data);
+
+    return {
+      status: 201,
+      body: customer
+    };
+  },
+  async update(id: string, data: unknown) {
+    const existing = await findAllCustomerById(id);
+
+    if (!existing) {
+      return {
+        status: 404,
+        body: buildErrorResponse('Cliente não encontrado.')
+      };
+    };
+
+    const parsed = UpdateCustomerSchema.safeParse(data);
+
+    if (!parsed.success) {
+      return {
+        status: 400,
+        body: buildErrorResponse('Dados inválidos.', 
+        parsed.error.flatten().fieldErrors as Record<string, string[]>)
+      };
+    };
+
+    const customer = await updateCustomer(id, parsed.data);
+
+    return {
+      status: 200,
+      body: customer
+    };
+  },
+  async remove(id: string) {
+    const existing = await findAllCustomerById(id);
+
+    if (!existing) {
+      return {
+        status: 404,
+        body: buildErrorResponse('Cliente não encontrado.')
+      };
+    }
+
+    await deleteCustomer(id);
+
+    return {
+      status: 200,
+      body: { message: 'Cliente removido com sucesso.' }
+    };
+  }
+};
