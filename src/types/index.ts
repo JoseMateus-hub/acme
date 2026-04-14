@@ -1,3 +1,5 @@
+export type SortOrder = 'asc' | 'desc';
+
 export interface User {
   id: string;
   name: string;
@@ -17,6 +19,14 @@ export interface Customer {
 
 export type CreateCustomerData = Omit<Customer, 'id'>;
 export type UpdateCustomerData = Partial<CreateCustomerData>;
+
+export interface findAllCustomerParams {
+  search?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  order?: SortOrder;
+}
 
 export type InvoiceStatus = 'PENDENTE' | 'PAGO';
 
