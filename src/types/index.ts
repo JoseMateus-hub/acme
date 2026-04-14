@@ -46,6 +46,19 @@ export interface Revenue {
   revenue: number;
 };
 
+export interface PaginationMeta {
+  total: number;
+  Page: number;
+  limit: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: PaginationMeta;
+}
+
 export interface ApiResponse<T> {
   data: T;
   message?: string;

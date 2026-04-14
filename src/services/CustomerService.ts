@@ -1,28 +1,69 @@
 import prisma from '@/lib/prisma';
-import { Customer, CreateCustomerData, UpdateCustomerData } from '@/types';
+import { 
+  Customer, 
+  CreateCustomerData, 
+  UpdateCustomerData, 
+  findAllCustomerParams,
+  PaginatedResponse
+  } from '@/types';
 
-interface findAllParams {
-  search?: string;
-}
+  const SORTABLE_FIELDS = ['name', 'email'] as const;
+
+  type SortableField = (typeof SORTABLE_FIELDS)[number];
+
+function isSortableField(value: string): value is SortableField {
+  return (SORTABLE_FIELDS as readonly string[]).includes(value as SortableField);
+};
+
 
 export async function findAllCustomers(
-  params: findAllParams = {}): 
-  Promise<Customer[]> {
+  params: findAllCustomerParams = {}
+): Promise<PaginatedResponse<Customer>> {
+  const {
+    search,
+    page = 1,
+    limit = 10,
+    sortBy = 'name',
+    order = 'asc',
+  } = params;
 
-  const { search } = params;
+  const safePage = Math.max(1, page);
+  const safeLimit = Math.min(Math.max(1, limit), 100);
+  const skip = (safePage - 1) * safeLimit;
+  const safeSortBy = isSortableField(sortBy) ? sortBy : 'name';
 
-  const customers = await prisma.customer.findMany({
-    where: search ? {
-      OR: [
-        { name: {contains: search, mode: 'insensitive'} },
-        { email: {contains: search, mode: 'insensitive'} }
-      ]
-    }: undefined,
-    orderBy: {name: 'asc'}
-  });
+  const where = search
+    ? {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' as const } },
+          { email: { contains: search, mode: 'insensitive' as const } },
+        ],
+      }
+    : undefined;
 
-  return customers
-};
+  const [customers, total] = await Promise.all([
+    prisma.customer.findMany({
+      where,
+      orderBy: { [safeSortBy]: order },
+      take: safeLimit,
+      skip,
+    }),
+    prisma.customer.count({ where }),
+  ]);
+
+  const totalPages = Math.ceil(total / safeLimit);
+
+  return {
+    data: customers,
+    meta: {
+      total,
+      Page: safePage,
+      limit: safeLimit,
+      totalPages,
+      hasMore: safePage < totalPages,
+    },
+  };
+}
 
 export async function findAllCustomerById(id: string): 
 Promise<Customer | null> {
